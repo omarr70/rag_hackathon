@@ -27,11 +27,18 @@ def create_vector_db():
         source_path = chunk.metadata.get("source", "guideline.pdf")
         doc_name = os.path.basename(source_path)
         page_num = chunk.metadata.get("page", 0) + 1
-        
+
+        if "aasld" in doc_name.lower():
+            source_url = "https://www.aasld.org/practice-guidelines"
+        elif "easl" in doc_name.lower():
+            source_url = "https://easl.eu/publications/guidelines"
+        else:
+            source_url = "N/A"
+
         chunk.metadata["document_name"] = doc_name
         chunk.metadata["page_number"] = page_num
         chunk.metadata["chunk_id"] = f"{doc_name}_p{page_num}_c{i}"
-        chunk.metadata["source_url"] = "https://www.who.int/publications"
+        chunk.metadata["source_url"] = source_url
 
     print(f"Total chunks created: {len(chunks)}")
 
@@ -49,13 +56,9 @@ def search_query(db, query):
     results = db.similarity_search(query, k=2)
     print("\n--- Search Results ---")
     for doc in results:
-        doc_name = doc.metadata.get("document_name", "Unknown")
-        page = doc.metadata.get("page_number", 0)
-        chunk_id = doc.metadata.get("chunk_id", "N/A")
-        print(f"Doc: {doc_name} | Page: {page} | ID: {chunk_id}")
         print(f"Content: {doc.page_content}\n")
 
 db = create_vector_db()
 if db:
-    user_query = "What is the recommended dose?"
+    user_query = "What are the cardiometabolic criteria to diagnose MASLD?"
     search_query(db, user_query)
